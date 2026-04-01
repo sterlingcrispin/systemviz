@@ -1,4 +1,4 @@
-# pcdiag
+# systemviz
 
 Small terminal dashboard for Ubuntu that keeps the main thermal and usage signals on one screen:
 
@@ -14,8 +14,8 @@ Small terminal dashboard for Ubuntu that keeps the main thermal and usage signal
 ## Run
 
 ```bash
-cd path/to/pc_diagnostics
-./pcdiag.py
+cd path/to/systemviz
+./systemviz.py
 ```
 
 ## Install As `systemviz`
@@ -23,7 +23,7 @@ cd path/to/pc_diagnostics
 User-local install:
 
 ```bash
-cd path/to/pc_diagnostics
+cd path/to/systemviz
 ./install_systemviz.sh
 systemviz
 ```
@@ -31,7 +31,7 @@ systemviz
 Optional global install:
 
 ```bash
-cd path/to/pc_diagnostics
+cd path/to/systemviz
 sudo ./install_systemviz.sh --global
 systemviz
 ```
@@ -45,10 +45,10 @@ If you prefer the installed command to keep tracking the repo file instead of co
 Useful flags:
 
 ```bash
-./pcdiag.py --interval 0.5
-./pcdiag.py --history 120
-./pcdiag.py --top 15
-./pcdiag.py --snapshot
+./systemviz.py --interval 0.5
+./systemviz.py --history 120
+./systemviz.py --top 15
+./systemviz.py --snapshot
 ```
 
 Controls in the live view:

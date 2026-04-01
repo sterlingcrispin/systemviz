@@ -4,7 +4,7 @@ set -euo pipefail
 mode="copy"
 dest="${HOME}/.local/bin/systemviz"
 repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source_file="${repo_dir}/pcdiag.py"
+source_file="${repo_dir}/systemviz.py"
 
 usage() {
   cat <<'EOF'

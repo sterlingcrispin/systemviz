@@ -873,7 +873,7 @@ def render_snapshot(
 
     lines = [
         truncate(
-            f"pcdiag  {snapshot.timestamp.strftime('%Y-%m-%d %H:%M:%S')}  "
+            f"systemviz  {snapshot.timestamp.strftime('%Y-%m-%d %H:%M:%S')}  "
             f"q quit  r reset history  left/right sort  top {top_n}",
             width,
         ),
@@ -993,7 +993,7 @@ def render_snapshot_compact(
 
     lines = [
         truncate(
-            f"pcdiag {snapshot.timestamp.strftime('%H:%M:%S')}  q quit  <> sort {SORT_LABELS[sort_field]}",
+            f"systemviz {snapshot.timestamp.strftime('%H:%M:%S')}  q quit  <> sort {SORT_LABELS[sort_field]}",
             width,
         ),
         truncate("=" * width, width),
@@ -1328,7 +1328,7 @@ def draw_dashboard(
 
     rows: list[list[tuple[str, int]]] = [
         [
-            ("pcdiag  ", color_attr("accent", bold=True)),
+            ("systemviz  ", color_attr("accent", bold=True)),
             (snapshot.timestamp.strftime("%Y-%m-%d %H:%M:%S"), 0),
             ("  q quit  r reset history  left/right sort  top ", 0),
             (str(top_n), color_attr("accent", bold=True)),
@@ -1494,7 +1494,7 @@ def draw_compact_dashboard(
 
     rows: list[list[tuple[str, int]]] = [
         [
-            ("pcdiag ", color_attr("accent", bold=True)),
+            ("systemviz ", color_attr("accent", bold=True)),
             (snapshot.timestamp.strftime("%H:%M:%S"), 0),
             ("  <> ", 0),
             (SORT_LABELS[sort_field], color_attr("accent", bold=True)),
