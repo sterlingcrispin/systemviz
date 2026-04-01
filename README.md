@@ -2,6 +2,8 @@
 
 Small terminal dashboard for Ubuntu that keeps the main thermal and usage signals on one screen:
 
+![systemviz screenshot](systemviz.png)
+
 - GPU utilization
 - GPU memory used percent
 - GPU temperature
