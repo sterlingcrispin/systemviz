@@ -18,7 +18,7 @@ cd path/to/systemviz
 ./systemviz.py
 ```
 
-## Install As `systemviz`
+## Install
 
 User-local install:
 
@@ -57,10 +57,10 @@ Controls in the live view:
 - `r` clears the history graphs
 - `left` and `right` arrows change the process-table sort column
 
-## Temperature references
+## Temperature status
 
-- CPU temperature bands are tuned for Threadripper-style `Tdie`/`Tccd` readings: `ok <60C`, `watch 60-63C`, `near 64-67C`, `max 68C+`
-- GPU temperature bands are derived from the NVIDIA driver-reported temperature limit on the current card, then shown as `ok`, `watch`, `near`, and `driver limit`
+- CPU temperature status uses `Tdie` when available and falls back to the best available CPU package reading
+- GPU temperature status uses the NVIDIA driver-reported thermal limit when available
 
 ## Data sources
 
@@ -70,6 +70,6 @@ Controls in the live view:
 
 ## Notes
 
+- Narrow terminals automatically switch to a compact layout
 - Per-process GPU percent comes from `nvidia-smi pmon`
 - Per-process VRAM is only available for processes `nvidia-smi` reports through the compute-apps query, so some desktop graphics processes may show GPU percent without a VRAM number
-- The main CPU temperature line intentionally removes the sensor label from the value column so the bars stay aligned; the detailed sensor names are still shown to the right
