@@ -57,7 +57,14 @@ Controls in the live view:
 
 - `q` quits
 - `r` clears the history graphs
+- `w` opens a prompt to watch a process-name substring such as `train.py`
+- `a` acknowledges a latched stop alert while keeping the watch active
+- `x` clears the current watch and its alert
 - `left` and `right` arrows change the process-table sort column
+
+When a watched process is running, systemviz pins a status line near the top of the screen.
+When the last matching process exits, the watch flips into a blinking `ALERT` state that stays
+latched until you acknowledge it with `a` or clear it with `x`.
 
 ## Temperature status
 
@@ -75,3 +82,4 @@ Controls in the live view:
 - Narrow terminals automatically switch to a compact layout
 - Per-process GPU percent comes from `nvidia-smi pmon`
 - Per-process VRAM is only available for processes `nvidia-smi` reports through the compute-apps query, so some desktop graphics processes may show GPU percent without a VRAM number
+- Process watches match case-insensitive substrings against the full command line when available, so watching `train.py` will also match `python /path/to/train.py --flag value`
