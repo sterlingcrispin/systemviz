@@ -799,9 +799,17 @@ def compact_status_text(status: str) -> str:
 def compact_process_name(command: str) -> str:
     if not command:
         return "-"
-    head = command.split()[0]
-    tail = head.rsplit("/", 1)[-1]
-    return tail or head
+    parts = command.split()
+    head = parts[0]
+    exe = head.rsplit("/", 1)[-1] or head
+    for arg in parts[1:]:
+        if arg.startswith("-"):
+            continue
+        if "/" in arg:
+            basename = arg.rsplit("/", 1)[-1]
+            if basename:
+                return f"{exe} {basename}"
+    return exe
 
 
 def process_name_matches(pattern: str, process_name: str) -> bool:
@@ -809,10 +817,7 @@ def process_name_matches(pattern: str, process_name: str) -> bool:
     return bool(query) and query in process_name.casefold()
 
 
-def update_process_watch(watch: ProcessWatch | None, snapshot: Snapshot) -> ProcessWatch | None:
-    if watch is None:
-        return None
-
+def update_process_watch(watch: ProcessWatch, snapshot: Snapshot) -> None:
     matches = [
         process
         for process in snapshot.running_processes
@@ -832,7 +837,11 @@ def update_process_watch(watch: ProcessWatch | None, snapshot: Snapshot) -> Proc
         watch.alert_active = True
 
     watch.is_running = is_running
-    return watch
+
+
+def update_process_watches(watches: list[ProcessWatch], snapshot: Snapshot) -> None:
+    for watch in watches:
+        update_process_watch(watch, snapshot)
 
 
 def format_watch_timestamp(value: datetime | None) -> str:
@@ -1371,7 +1380,7 @@ def draw_dashboard(
     monitor: Monitor,
     top_n: int,
     sort_field: str,
-    watch: ProcessWatch | None,
+    watches: list[ProcessWatch],
     blink_on: bool,
 ) -> None:
     height, width = stdscr.getmaxyx()
@@ -1526,8 +1535,12 @@ def draw_dashboard(
             ("  use left/right arrows", 0),
         ],
     ]
-    if watch is not None:
-        rows[2:2] = [watch_segments(watch, blink_on), []]
+    if watches:
+        watch_rows: list[list[tuple[str, int]]] = []
+        for w in watches:
+            watch_rows.append(watch_segments(w, blink_on))
+        watch_rows.append([])
+        rows[2:2] = watch_rows
 
     for line_index, segments in enumerate(rows):
         if line_index >= height - 1:
@@ -1556,7 +1569,7 @@ def draw_compact_dashboard(
     monitor: Monitor,
     top_n: int,
     sort_field: str,
-    watch: ProcessWatch | None,
+    watches: list[ProcessWatch],
     blink_on: bool,
 ) -> None:
     height, width = stdscr.getmaxyx()
@@ -1698,8 +1711,12 @@ def draw_compact_dashboard(
             value_width=6,
         ),
     ]
-    if watch is not None:
-        rows[2:2] = [watch_segments(watch, blink_on), []]
+    if watches:
+        watch_rows = []
+        for w in watches:
+            watch_rows.append(watch_segments(w, blink_on))
+        watch_rows.append([])
+        rows[2:2] = watch_rows
 
     process_header_row = len(rows) + 1
     process_rows_available = max(0, height - process_header_row - 1)
@@ -1761,7 +1778,7 @@ def run_tui(stdscr: curses.window, monitor: Monitor, interval: float, top_n: int
     init_colors()
 
     snapshot: Snapshot | None = None
-    watch: ProcessWatch | None = None
+    watches: list[ProcessWatch] = []
     next_refresh = time.monotonic()
     sort_index = 0
 
@@ -1769,12 +1786,15 @@ def run_tui(stdscr: curses.window, monitor: Monitor, interval: float, top_n: int
         now = time.monotonic()
         if snapshot is None or now >= next_refresh:
             snapshot = monitor.collect()
-            watch = update_process_watch(watch, snapshot)
+            update_process_watches(watches, snapshot)
             next_refresh = now + interval
 
         height, width = stdscr.getmaxyx()
         stdscr.erase()
-        blink_on = bool(watch and watch.alert_active and int(time.monotonic() * 4) % 2 == 0)
+        blink_on = bool(
+            any(w.alert_active for w in watches)
+            and int(time.monotonic() * 4) % 2 == 0
+        )
         if height < 20 or width < 88:
             draw_compact_dashboard(
                 stdscr,
@@ -1782,7 +1802,7 @@ def run_tui(stdscr: curses.window, monitor: Monitor, interval: float, top_n: int
                 monitor,
                 top_n,
                 SORT_FIELDS[sort_index],
-                watch,
+                watches,
                 blink_on,
             )
         else:
@@ -1792,7 +1812,7 @@ def run_tui(stdscr: curses.window, monitor: Monitor, interval: float, top_n: int
                 monitor,
                 top_n,
                 SORT_FIELDS[sort_index],
-                watch,
+                watches,
                 blink_on,
             )
         stdscr.refresh()
@@ -1811,15 +1831,17 @@ def run_tui(stdscr: curses.window, monitor: Monitor, interval: float, top_n: int
         if key in (ord("w"), ord("W")):
             pattern = prompt_watch_pattern(stdscr)
             if pattern:
-                watch = ProcessWatch(pattern=pattern)
-                watch = update_process_watch(watch, snapshot)
+                new_watch = ProcessWatch(pattern=pattern)
+                update_process_watch(new_watch, snapshot)
+                watches.append(new_watch)
             next_refresh = time.monotonic()
             continue
-        if key in (ord("a"), ord("A")) and watch is not None:
-            watch.alert_active = False
+        if key in (ord("a"), ord("A")):
+            for w in watches:
+                w.alert_active = False
             continue
         if key in (ord("x"), ord("X")):
-            watch = None
+            watches.clear()
             continue
         if key in (curses.KEY_RIGHT, curses.KEY_DOWN):
             sort_index = (sort_index + 1) % len(SORT_FIELDS)
